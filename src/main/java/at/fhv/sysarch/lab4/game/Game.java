@@ -22,6 +22,7 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
     
     private Point2D startPointPhysical;
     private Point2D startPointScreen;
+    private boolean ballsMoving;
 
     public Game(Renderer renderer, Physics physics) {
         this.renderer = renderer;
@@ -34,6 +35,10 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
     }
 
     public void onMousePressed(MouseEvent e) {
+
+        if (ballsMoving)
+            return;
+
         double x = e.getX();
         double y = e.getY();
 
@@ -47,6 +52,10 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
     }
 
     public void setOnMouseDragged(MouseEvent e) {
+
+        if (ballsMoving)
+            return;
+
         double x = e.getX();
         double y = e.getY();
 
@@ -56,6 +65,10 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
     }
 
     public void onMouseReleased(MouseEvent e) {
+
+        if (ballsMoving)
+            return;
+
         double x = e.getX();
         double y = e.getY();
 

@@ -15,6 +15,11 @@ import org.dyn4j.geometry.Vector2;
 public class Physics implements ContactListener, StepListener {
     private World world;
 
+    // listener
+    private BallPocketedListener ballPocketedListener;
+    private BallsCollisionListener ballsCollisionListener;
+    private ObjectsRestListener objectsRestListener;
+
     public Physics(){
         this.world = new World();
         this.world.setGravity(World.ZERO_GRAVITY);
@@ -43,7 +48,17 @@ public class Physics implements ContactListener, StepListener {
 
     @Override
     public void end(Step step, World world) {
+        int ballsMoving = 0;
 
+        for (Ball ball : Ball.values()) {
+            if (!ball.getBody().getLinearVelocity().isZero())
+                ballsMoving++;
+        }
+
+        if (ballsMoving > 0)
+            objectsRestListener.onEndAllObjectsRest();
+        else
+            objectsRestListener.onStartAllObjectsRest();
     }
 
     @Override
@@ -72,7 +87,11 @@ public class Physics implements ContactListener, StepListener {
             if (body1.getUserData() instanceof Ball) {
                 Vector2 ballPosition = body1.getTransform().getTranslation();
                 Vector2 pocketPosition = body2.getTransform().getTranslation();
-                isBallPocketed = PhysicsUtils.isBallPocketed(ballPosition, pocketPosition, point);
+
+                if (PhysicsUtils.isBallPocketed(ballPosition, pocketPosition, point)) {
+                    Object obj = body1.getUserData();
+                    ballPocketedListener.onBallPocketed((Ball) obj);
+                }
             } else {
                 Vector2 ballPosition = body2.getTransform().getTranslation();
                 Vector2 pocketPosition = body1.getTransform().getTranslation();
