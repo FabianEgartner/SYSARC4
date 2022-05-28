@@ -6,6 +6,7 @@ import java.util.List;
 
 import at.fhv.sysarch.lab4.physics.Physics;
 import at.fhv.sysarch.lab4.rendering.Renderer;
+import javafx.geometry.Point2D;
 import javafx.scene.input.MouseEvent;
 import org.dyn4j.dynamics.RaycastResult;
 import org.dyn4j.geometry.Ray;
@@ -14,6 +15,9 @@ import org.dyn4j.geometry.Vector2;
 public class Game {
     private final Renderer renderer;
     private Physics physics;
+    
+    private Point2D startPointPhysical;
+    private Point2D startPointScreen;
 
     public Game(Renderer renderer, Physics physics) {
         this.renderer = renderer;
@@ -28,28 +32,41 @@ public class Game {
         double pX = this.renderer.screenToPhysicsX(x);
         double pY = this.renderer.screenToPhysicsY(y);
 
-        Ray ray = new Ray(new Vector2(pX,pY), new Vector2(1,0));
-        ArrayList<RaycastResult> results = new ArrayList<>();
-        boolean result = this.physics.getWorld().raycast(ray, 1.0,false,false,results);
-        if (result){
-            System.out.println("We hit something!");
-            RaycastResult hit = results.get(0);
-            if (hit.getBody().getUserData() instanceof Ball){
-                hit.getBody().applyForce(new Vector2(1,0).multiply(340));
-            }
+        startPointScreen = new Point2D(x, y);
+        startPointPhysical = new Point2D(pX, pY);
 
-        }
+        renderer.setCueStartPoint(startPointScreen);
     }
 
     public void onMouseReleased(MouseEvent e) {
-    }
-
-    public void setOnMouseDragged(MouseEvent e) {
         double x = e.getX();
         double y = e.getY();
 
         double pX = renderer.screenToPhysicsX(x);
         double pY = renderer.screenToPhysicsY(y);
+
+        Point2D endPointPhysical = new Point2D(pX, pY);
+
+        // create 2D vectors from start-/endpoint
+        Vector2 start = new Vector2(startPointPhysical.getX(), startPointPhysical.getY());
+        Vector2 end = new Vector2(endPointPhysical.getX(), endPointPhysical.getY());
+
+        // difference (direction) between start-/endpoint
+        Vector2 difference = start.difference(end);
+
+        Ray ray = new Ray(start, difference);
+
+        ArrayList<RaycastResult> results = new ArrayList<>();
+        boolean result = this.physics.getWorld().raycast(ray, 1.0,false, false, results);
+
+        if (result) {
+            Body body = results.get(0).getBody();
+
+            if (body.getUserData() instanceof Ball)
+                body.applyImpulse(difference.multiply(15));
+        }
+
+        renderer.removeCue();
     }
 
     private void placeBalls(List<Ball> balls) {

@@ -7,6 +7,7 @@ import org.dyn4j.dynamics.contact.ContactListener;
 import org.dyn4j.dynamics.contact.ContactPoint;
 import org.dyn4j.dynamics.contact.PersistedContactPoint;
 import org.dyn4j.dynamics.contact.SolvedContactPoint;
+import org.dyn4j.geometry.Vector2;
 
 public class Physics implements ContactListener, StepListener {
     private World world;
@@ -50,7 +51,7 @@ public class Physics implements ContactListener, StepListener {
     @Override
     public boolean begin(ContactPoint point) {
 
-        System.out.println("Contact!");
+//        System.out.println("Contact!");
         return true;
     }
 

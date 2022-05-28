@@ -233,7 +233,26 @@ public class Renderer extends AnimationTimer {
     }
 
     private void drawCue() {
-        // TODO: draw cue
+        // rendering cue in JavaFX coordinate system
+        this.gc.setTransform(this.jfxCoords);
+
+        if (cueStartPoint != null && cueEndPoint != null) {
+            gc.setLineWidth(5);
+            gc.strokeLine(cueStartPoint.getX(), cueStartPoint.getY(), cueEndPoint.getX(), cueEndPoint.getY());
+        }
+    }
+
+    public void setCueStartPoint(Point2D startPoint) {
+        this.cueStartPoint = startPoint;
+    }
+
+    public void setCueEndPoint(Point2D endPoint) {
+        this.cueEndPoint = endPoint;
+    }
+
+    public void removeCue() {
+        this.cueStartPoint = null;
+        this.cueEndPoint = null;
     }
 
     private void drawFPS(double dt) {
