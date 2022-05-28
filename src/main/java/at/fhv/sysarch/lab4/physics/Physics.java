@@ -72,18 +72,16 @@ public class Physics implements ContactListener, StepListener {
             boolean isBallPocketed;
 
             if (body1.getUserData() instanceof Ball) {
-                isBallPocketed = PhysicsUtils.isBallPocketed(body1, body2, point);
+                Vector2 ballPosition = body1.getTransform().getTranslation();
+                Vector2 pocketPosition = body2.getTransform().getTranslation();
+                isBallPocketed = PhysicsUtils.isBallPocketed(ballPosition, pocketPosition, point);
             } else {
-                isBallPocketed = PhysicsUtils.isBallPocketed(body2, body1, point);
+                Vector2 ballPosition = body2.getTransform().getTranslation();
+                Vector2 pocketPosition = body1.getTransform().getTranslation();
+                isBallPocketed = PhysicsUtils.isBallPocketed(ballPosition, pocketPosition, point);
             }
 
-            Vector2 body1Vector = body1.getTransform().getTranslation();
-            Vector2 body2Vector = body2.getTransform().getTranslation();
-
-
-
-            Vector2 diffVector = body1Vector.difference(body2Vector);
-            System.out.println(diffVector.getMagnitude());
+            System.out.println(isBallPocketed);
 
 //            System.out.println("x: " + diffVector.x);
 //            System.out.println("y: " + diffVector.y);
