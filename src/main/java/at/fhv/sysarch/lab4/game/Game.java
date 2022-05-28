@@ -8,6 +8,7 @@ import at.fhv.sysarch.lab4.physics.Physics;
 import at.fhv.sysarch.lab4.rendering.Renderer;
 import javafx.geometry.Point2D;
 import javafx.scene.input.MouseEvent;
+import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.RaycastResult;
 import org.dyn4j.geometry.Ray;
 import org.dyn4j.geometry.Vector2;
@@ -36,6 +37,15 @@ public class Game {
         startPointPhysical = new Point2D(pX, pY);
 
         renderer.setCueStartPoint(startPointScreen);
+    }
+
+    public void setOnMouseDragged(MouseEvent e) {
+        double x = e.getX();
+        double y = e.getY();
+
+        Point2D dragPointScreen = new Point2D(x, y);
+
+        this.renderer.setCueEndPoint(dragPointScreen);
     }
 
     public void onMouseReleased(MouseEvent e) {

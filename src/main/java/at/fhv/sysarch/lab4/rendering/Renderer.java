@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import at.fhv.sysarch.lab4.physics.Physics;
+import javafx.geometry.Point2D;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Circle;
 import org.dyn4j.geometry.Polygon;
@@ -40,7 +41,7 @@ public class Renderer extends AnimationTimer {
 
     private final double[] xsBuffer = new double[4];
     private final double[] ysBuffer = new double[4];
-    
+
     private String strikeMessage;
     private String foulMessage;
     private String actionMessage;
@@ -50,6 +51,10 @@ public class Renderer extends AnimationTimer {
     private Physics physics;
 
     private Optional<FrameListener> frameListener;
+
+    // cue start and endpoint
+    private Point2D cueStartPoint;
+    private Point2D cueEndPoint;
 
     public Renderer(final GraphicsContext gc, 
         int sceneWidth, int sceneHeight, Physics physics) {
