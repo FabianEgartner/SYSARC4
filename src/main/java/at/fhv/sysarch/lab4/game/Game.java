@@ -23,6 +23,10 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
     // cue
     private Point2D startPointPhysical;
     private Point2D startPointScreen;
+
+    // player
+    private int currentPlayer = 1;
+
     private boolean ballsMoving;
 
     public Game(Renderer renderer, Physics physics) {
@@ -182,5 +186,33 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
     @Override
     public void onStartAllObjectsRest() {
         this.ballsMoving = false;
+    }
+
+    private void switchPlayers() {
+
+        if (currentPlayer == 1)
+            currentPlayer = 2;
+        else
+            currentPlayer = 1;
+    }
+
+    private void increasePlayerScore() {
+
+        if (currentPlayer == 1)
+            renderer.setPlayer1Score(renderer.getPlayer1Score() + 1);
+        else
+            renderer.setPlayer2Score(renderer.getPlayer2Score() + 1);
+    }
+
+    private void decreasePlayerScore() {
+
+        if (currentPlayer == 1)
+            renderer.setPlayer1Score(renderer.getPlayer1Score() - 1);
+        else
+            renderer.setPlayer2Score(renderer.getPlayer2Score() - 1);
+    }
+
+    private void moveWhiteBallToStartPosition() {
+        Ball.WHITE.setPosition(Table.Constants.WIDTH * 0.25, 0);
     }
 }
