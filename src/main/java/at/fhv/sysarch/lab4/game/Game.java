@@ -19,7 +19,8 @@ import org.dyn4j.geometry.Vector2;
 public class Game implements BallPocketedListener, BallsCollisionListener, ObjectsRestListener {
     private final Renderer renderer;
     private Physics physics;
-    
+
+    // cue
     private Point2D startPointPhysical;
     private Point2D startPointScreen;
     private boolean ballsMoving;
@@ -151,10 +152,21 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
     }
 
     @Override
-    public boolean onBallPocketed(Ball b) {
+    public void onBallPocketed(Ball b) {
         b.getBody().setLinearVelocity(0, 0);
 
-        return true;
+        if (b == Ball.WHITE) {
+            this.renderer.setFoulMessage("White ball pocketed!");
+            this.decreasePlayerScore();
+
+            this.moveWhiteBallToStartPosition();
+
+            this.switchPlayers();
+        } else {
+            renderer.removeBall(b);
+            physics.getWorld().removeBody(b.getBody());
+            this.increasePlayerScore();
+        }
     }
 
     @Override

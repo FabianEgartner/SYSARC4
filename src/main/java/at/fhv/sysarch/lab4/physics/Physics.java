@@ -20,7 +20,7 @@ public class Physics implements ContactListener, StepListener {
     private BallsCollisionListener ballsCollisionListener;
     private ObjectsRestListener objectsRestListener;
 
-    public Physics(){
+    public Physics() {
         this.world = new World();
         this.world.setGravity(World.ZERO_GRAVITY);
 
@@ -89,15 +89,14 @@ public class Physics implements ContactListener, StepListener {
                 Vector2 pocketPosition = body2.getTransform().getTranslation();
 
                 if (PhysicsUtils.isBallPocketed(ballPosition, pocketPosition, point)) {
-                    Object obj = body1.getUserData();
-                    ballPocketedListener.onBallPocketed((Ball) obj);
+                    ballPocketedListener.onBallPocketed((Ball) body1.getUserData());
                 }
             } else {
                 Vector2 ballPosition = body2.getTransform().getTranslation();
                 Vector2 pocketPosition = body1.getTransform().getTranslation();
 
                 if (PhysicsUtils.isBallPocketed(ballPosition, pocketPosition, point)) {
-                    ballPocketedListener.onBallPocketed((Ball)body2.getUserData());
+                    ballPocketedListener.onBallPocketed((Ball) body2.getUserData());
                 }
             }
         }
