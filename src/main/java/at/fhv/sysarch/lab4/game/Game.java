@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import at.fhv.sysarch.lab4.physics.BallPocketedListener;
+import at.fhv.sysarch.lab4.physics.BallsCollisionListener;
+import at.fhv.sysarch.lab4.physics.ObjectsRestListener;
 import at.fhv.sysarch.lab4.physics.Physics;
 import at.fhv.sysarch.lab4.rendering.Renderer;
 import javafx.geometry.Point2D;
@@ -13,7 +16,7 @@ import org.dyn4j.dynamics.RaycastResult;
 import org.dyn4j.geometry.Ray;
 import org.dyn4j.geometry.Vector2;
 
-public class Game {
+public class Game implements BallPocketedListener, BallsCollisionListener, ObjectsRestListener {
     private final Renderer renderer;
     private Physics physics;
     
@@ -24,6 +27,10 @@ public class Game {
         this.renderer = renderer;
         this.physics = physics;
         this.initWorld();
+
+        physics.setBallPocketedListener(this);
+        physics.setBallsCollisionListener(this);
+        physics.setObjectsRestListener(this);
     }
 
     public void onMousePressed(MouseEvent e) {
@@ -128,5 +135,27 @@ public class Game {
         Table table = new Table();
         physics.getWorld().addBody(table.getBody());
         renderer.setTable(table);
+    }
+
+    @Override
+    public boolean onBallPocketed(Ball b) {
+        b.getBody().setLinearVelocity(0, 0);
+
+        return true;
+    }
+
+    @Override
+    public void onBallsCollide(Ball b1, Ball b2) {
+
+    }
+
+    @Override
+    public void onEndAllObjectsRest() {
+        this.ballsMoving = true;
+    }
+
+    @Override
+    public void onStartAllObjectsRest() {
+        this.ballsMoving = false;
     }
 }

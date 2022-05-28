@@ -69,8 +69,6 @@ public class Physics implements ContactListener, StepListener {
             Body body1 = point.getBody1();
             Body body2 = point.getBody2();
 
-            boolean isBallPocketed;
-
             if (body1.getUserData() instanceof Ball) {
                 Vector2 ballPosition = body1.getTransform().getTranslation();
                 Vector2 pocketPosition = body2.getTransform().getTranslation();
@@ -78,32 +76,13 @@ public class Physics implements ContactListener, StepListener {
             } else {
                 Vector2 ballPosition = body2.getTransform().getTranslation();
                 Vector2 pocketPosition = body1.getTransform().getTranslation();
-                isBallPocketed = PhysicsUtils.isBallPocketed(ballPosition, pocketPosition, point);
+
+                if (PhysicsUtils.isBallPocketed(ballPosition, pocketPosition, point)) {
+                    ballPocketedListener.onBallPocketed((Ball)body2.getUserData());
+                }
             }
-
-            System.out.println(isBallPocketed);
-
-//            System.out.println("x: " + diffVector.x);
-//            System.out.println("y: " + diffVector.y);
-//
-//            if (diffVector.x >= 1.2) {
-//                System.out.println("Pocketed");
-//            } else {
-//                System.out.println("Not Enough");
-//            }
-            double x2 = body2.getTransform().getTranslation().x;
-            double y2 = body2.getTransform().getTranslation().y;
-
-
-
-//            if (body1.getUserData() instanceof Ball) {
-//
-//            } else {
-//
-//            }
-//
-//            System.out.println("sensor");
         }
+
         return true;
     }
 
@@ -115,5 +94,17 @@ public class Physics implements ContactListener, StepListener {
     @Override
     public void postSolve(SolvedContactPoint point) {
 
+    }
+
+    public void setBallPocketedListener(BallPocketedListener ballPocketedListener) {
+        this.ballPocketedListener = ballPocketedListener;
+    }
+
+    public void setBallsCollisionListener(BallsCollisionListener ballsCollisionListener) {
+        this.ballsCollisionListener = ballsCollisionListener;
+    }
+
+    public void setObjectsRestListener(ObjectsRestListener objectsRestListener) {
+        this.objectsRestListener = objectsRestListener;
     }
 }
