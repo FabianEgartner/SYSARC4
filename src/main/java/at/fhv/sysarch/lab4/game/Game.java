@@ -35,7 +35,7 @@ public class Game {
             System.out.println("We hit something!");
             RaycastResult hit = results.get(0);
             if (hit.getBody().getUserData() instanceof Ball){
-                hit.getBody().applyForce(new Vector2(1,0).multiply(500));
+                hit.getBody().applyForce(new Vector2(1,0).multiply(340));
             }
 
         }
