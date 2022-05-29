@@ -28,9 +28,16 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
     private int currentPlayer = 1;
     private boolean hasAlreadyPlayed;
 
+    // balls
+    private int ballsPocketedInRound;
+    private int ballsPocketedInGame;
     private boolean ballsMoving;
-    private boolean isFoul;
-    private boolean whiteBallDidNotCollideWithOtherBall;
+
+    // fouls
+    private boolean coloredBallHitFirstFoul;
+    private boolean whiteBallPocketedFoul;
+    private boolean noCollidingFoul;
+
 
     public Game(Renderer renderer, Physics physics) {
         this.renderer = renderer;
@@ -44,6 +51,7 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
 
     public void onMousePressed(MouseEvent e) {
 
+        // set messages to empty
         renderer.setStrikeMessage("");
         renderer.setActionMessage("");
         renderer.setFoulMessage("");
@@ -96,6 +104,7 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
         // difference (direction) between start-/endpoint
         Vector2 difference = start.difference(end);
 
+        // ignore simple mouse clicks
         if (!difference.isZero()) {
             Ray ray = new Ray(start, difference);
 
@@ -111,13 +120,8 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
                     hasAlreadyPlayed = true;
                 }
 
-                if (ball != Ball.WHITE) {
-                    this.isFoul = true;
-                    this.decreasePlayerScore();
-                    renderer.setFoulMessage("Foul! Striking only the white ball is allowed");
-                }
-                else
-                    this.isFoul = false;
+                if (ball != Ball.WHITE)
+                    coloredBallHitFirstFoul = true;
             }
         }
 
@@ -127,7 +131,7 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
     private void placeBalls(List<Ball> balls) {
         Collections.shuffle(balls);
 
-        // positioning the billard balls IN WORLD COORDINATES: meters
+        // positioning the billiard balls IN WORLD COORDINATES: meters
         int row = 0;
         int col = 0;
         int colSize = 5;
@@ -174,7 +178,7 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
         physics.getWorld().addBody(table.getBody());
         renderer.setTable(table);
 
-        renderer.setActionMessage("Player 1 starts");
+        renderer.setActionMessage("Player 1 starts the game!");
     }
 
     @Override
@@ -182,25 +186,19 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
         b.getBody().setLinearVelocity(0, 0);
 
         if (b == Ball.WHITE) {
-            isFoul = true;
-            renderer.setFoulMessage("Foul! White ball pocketed by Player " + currentPlayer + "!");
-            this.decreasePlayerScore();
-
-            this.moveWhiteBallToStartPosition();
+            whiteBallPocketedFoul = true;
         } else {
             renderer.removeBall(b);
             physics.getWorld().removeBody(b.getBody());
-
-            if (!isFoul)
-                this.increasePlayerScore();
+            ballsPocketedInRound++;
+            ballsPocketedInGame++;
         }
     }
 
     @Override
     public void onBallsCollide(Ball b1, Ball b2) {
-
         if (b1 == Ball.WHITE && b2 != Ball.WHITE || b1 != Ball.WHITE && b2 == Ball.WHITE)
-            whiteBallDidNotCollideWithOtherBall = false;
+            noCollidingFoul = false;
     }
 
     @Override
@@ -210,51 +208,100 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
 
     @Override
     public void onStartAllObjectsRest() {
+        if (hasAlreadyPlayed) {
+            // noCollidingFoul & whiteBallPocketedFoul - decrease player score by 1 + 1
+            if (noCollidingFoul && whiteBallPocketedFoul) {
+                this.decreasePlayerScoreByAmount(2);
+                renderer.setFoulMessage("Foul! No collision with other balls & white ball pocketed!");
+            }
 
-        if (whiteBallDidNotCollideWithOtherBall && hasAlreadyPlayed) {
-            isFoul = true;
-            this.decreasePlayerScore();
-            renderer.setFoulMessage("Foul! White ball did not touch any other ball");
+            // noCollidingFoul - decrease player score by 1
+            else if (noCollidingFoul) {
+                this.decreasePlayerScoreByAmount(1);
+                renderer.setFoulMessage("Foul! No collision with other balls!");
+            }
+
+            // coloredBallHitFirstFoul & whiteBallPocketedFoul - decrease player score by amount of balls pocketed + 1
+            else if (coloredBallHitFirstFoul && whiteBallPocketedFoul) {
+                this.decreasePlayerScoreByAmount(ballsPocketedInRound + 1);
+                renderer.setFoulMessage("Foul! Colored ball hit first & white ball pocketed!");
+            }
+
+            // coloredBallHitFirstFoul - decrease player score by amount of balls pocketed
+            else if (coloredBallHitFirstFoul) {
+                this.decreasePlayerScoreByAmount(ballsPocketedInRound);
+                renderer.setFoulMessage("Foul! Colored ball hit first!");
+            }
+
+            // whiteBallPocketedFoul - decrease player score by 1
+            else if (whiteBallPocketedFoul) {
+                this.decreasePlayerScoreByAmount(1);
+                renderer.setFoulMessage("Foul! White ball pocketed!");
+            }
+
+            // reset white ball position & switch players
+            if (coloredBallHitFirstFoul || whiteBallPocketedFoul || noCollidingFoul) {
+                this.moveWhiteBallToStartPosition();
+                this.switchPlayers();
+            } else if (ballsPocketedInRound == 0) {
+                renderer.setStrikeMessage("No balls pocketed!");
+                this.switchPlayers();
+            } else {
+                this.increasePlayerScoreByAmount(ballsPocketedInRound);
+            }
+
+            // reset fouls
+            coloredBallHitFirstFoul = false;
+            whiteBallPocketedFoul = false;
+            noCollidingFoul = true;
+
+            // reset balls
+            ballsMoving = false;
+            ballsPocketedInRound = 0;
+
+            hasAlreadyPlayed = false;
+
+            // reset game if no balls left
+            if (ballsPocketedInGame == 15) {
+                this.resetGame();
+            }
         }
-
-        if (isFoul)
-            this.switchPlayers();
-
-        ballsMoving = false;
-        whiteBallDidNotCollideWithOtherBall = true;
-        isFoul = false;
-        hasAlreadyPlayed = false;
     }
 
     private void switchPlayers() {
-
         if (currentPlayer == 1)
             currentPlayer = 2;
         else
             currentPlayer = 1;
 
-        renderer.setActionMessage("Player " + currentPlayer + "'s Turn");
+        renderer.setActionMessage("Switching players: Player " + currentPlayer + " is now on!");
     }
 
-    private void increasePlayerScore() {
-
+    private void increasePlayerScoreByAmount(int amount) {
         if (currentPlayer == 1)
-            renderer.setPlayer1Score(renderer.getPlayer1Score() + 1);
+            renderer.setPlayer1Score(renderer.getPlayer1Score() + amount);
         else
-            renderer.setPlayer2Score(renderer.getPlayer2Score() + 1);
+            renderer.setPlayer2Score(renderer.getPlayer2Score() + amount);
 
-        renderer.setStrikeMessage("Player " + currentPlayer + " scored");
+        renderer.setStrikeMessage("Player " + currentPlayer + " scored " + amount + " point(s)!");
     }
 
-    private void decreasePlayerScore() {
-
+    private void decreasePlayerScoreByAmount(int amount) {
         if (currentPlayer == 1)
-            renderer.setPlayer1Score(renderer.getPlayer1Score() - 1);
+            renderer.setPlayer1Score(renderer.getPlayer1Score() - amount);
         else
-            renderer.setPlayer2Score(renderer.getPlayer2Score() - 1);
+            renderer.setPlayer2Score(renderer.getPlayer2Score() - amount);
+
+        renderer.setStrikeMessage("Due to the foul(s), Player " + currentPlayer + " lost " + amount + " point(s)!");
     }
 
     private void moveWhiteBallToStartPosition() {
         Ball.WHITE.setPosition(Table.Constants.WIDTH * 0.25, 0);
+    }
+
+    private void resetGame() {
+
+        // TODO: implement
+
     }
 }

@@ -306,10 +306,10 @@ public class Renderer extends AnimationTimer {
         player2ScoreTrans.appendScale(5, 5);
 
         this.gc.setTransform(actionMsgTrans);
-        this.gc.fillText(this.actionMessage, 75, -40);
+        this.gc.fillText(this.actionMessage, 75, -60);
 
         this.gc.setTransform(strikeMsgTrans);
-        this.gc.fillText(this.strikeMessage, 0, 0);
+        this.gc.fillText(this.strikeMessage, 75, -20);
 
         this.gc.setTransform(player1ScoreTrans);
         this.gc.fillText(String.format("Player 1 score: %d", this.player1Score), 0, 0);
@@ -353,7 +353,7 @@ public class Renderer extends AnimationTimer {
 
         this.gc.setTransform(pocketTrans);
 
-        // center of phyics circle is in the center
+        // center of physics circle is in the center
         // javafx draws ovals from top left corner
         this.gc.fillOval(-r, -r, d, d);
     }
