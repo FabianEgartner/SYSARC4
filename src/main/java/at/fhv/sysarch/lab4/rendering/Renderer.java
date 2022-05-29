@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import at.fhv.sysarch.lab4.physics.Physics;
+import javafx.geometry.Point2D;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Circle;
 import org.dyn4j.geometry.Polygon;
@@ -40,7 +41,7 @@ public class Renderer extends AnimationTimer {
 
     private final double[] xsBuffer = new double[4];
     private final double[] ysBuffer = new double[4];
-    
+
     private String strikeMessage;
     private String foulMessage;
     private String actionMessage;
@@ -50,6 +51,10 @@ public class Renderer extends AnimationTimer {
     private Physics physics;
 
     private Optional<FrameListener> frameListener;
+
+    // cue start and endpoint
+    private Point2D cueStartPoint;
+    private Point2D cueEndPoint;
 
     public Renderer(final GraphicsContext gc, 
         int sceneWidth, int sceneHeight, Physics physics) {
@@ -90,8 +95,16 @@ public class Renderer extends AnimationTimer {
         this.foulMessage = foulMessage;
     }
 
+    public int getPlayer1Score() {
+        return player1Score;
+    }
+
     public void setPlayer1Score(int player1Score) {
         this.player1Score = player1Score;
+    }
+
+    public int getPlayer2Score() {
+        return player2Score;
     }
 
     public void setPlayer2Score(int player2Score) {
@@ -233,7 +246,26 @@ public class Renderer extends AnimationTimer {
     }
 
     private void drawCue() {
-        // TODO: draw cue
+        // rendering cue in JavaFX coordinate system
+        this.gc.setTransform(this.jfxCoords);
+
+        if (cueStartPoint != null && cueEndPoint != null) {
+            gc.setLineWidth(5);
+            gc.strokeLine(cueStartPoint.getX(), cueStartPoint.getY(), cueEndPoint.getX(), cueEndPoint.getY());
+        }
+    }
+
+    public void setCueStartPoint(Point2D startPoint) {
+        this.cueStartPoint = startPoint;
+    }
+
+    public void setCueEndPoint(Point2D endPoint) {
+        this.cueEndPoint = endPoint;
+    }
+
+    public void removeCue() {
+        this.cueStartPoint = null;
+        this.cueEndPoint = null;
     }
 
     private void drawFPS(double dt) {

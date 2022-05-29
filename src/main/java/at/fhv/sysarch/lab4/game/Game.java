@@ -4,52 +4,104 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import at.fhv.sysarch.lab4.physics.BallPocketedListener;
+import at.fhv.sysarch.lab4.physics.BallsCollisionListener;
+import at.fhv.sysarch.lab4.physics.ObjectsRestListener;
 import at.fhv.sysarch.lab4.physics.Physics;
 import at.fhv.sysarch.lab4.rendering.Renderer;
+import javafx.geometry.Point2D;
 import javafx.scene.input.MouseEvent;
+import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.RaycastResult;
 import org.dyn4j.geometry.Ray;
 import org.dyn4j.geometry.Vector2;
 
-public class Game {
+public class Game implements BallPocketedListener, BallsCollisionListener, ObjectsRestListener {
     private final Renderer renderer;
     private Physics physics;
+
+    // cue
+    private Point2D startPointPhysical;
+    private Point2D startPointScreen;
+
+    // player
+    private int currentPlayer = 1;
+
+    private boolean ballsMoving;
 
     public Game(Renderer renderer, Physics physics) {
         this.renderer = renderer;
         this.physics = physics;
         this.initWorld();
+
+        physics.setBallPocketedListener(this);
+        physics.setBallsCollisionListener(this);
+        physics.setObjectsRestListener(this);
     }
 
     public void onMousePressed(MouseEvent e) {
+
+        if (ballsMoving)
+            return;
+
         double x = e.getX();
         double y = e.getY();
 
         double pX = this.renderer.screenToPhysicsX(x);
         double pY = this.renderer.screenToPhysicsY(y);
 
-        Ray ray = new Ray(new Vector2(pX,pY), new Vector2(1,0));
-        ArrayList<RaycastResult> results = new ArrayList<>();
-        boolean result = this.physics.getWorld().raycast(ray, 1.0,false,false,results);
-        if (result){
-            System.out.println("We hit something!");
-            RaycastResult hit = results.get(0);
-            if (hit.getBody().getUserData() instanceof Ball){
-                hit.getBody().applyForce(new Vector2(1,0).multiply(340));
-            }
+        startPointScreen = new Point2D(x, y);
+        startPointPhysical = new Point2D(pX, pY);
 
-        }
-    }
-
-    public void onMouseReleased(MouseEvent e) {
+        renderer.setCueStartPoint(startPointScreen);
     }
 
     public void setOnMouseDragged(MouseEvent e) {
+
+        if (ballsMoving)
+            return;
+
+        double x = e.getX();
+        double y = e.getY();
+
+        Point2D dragPointScreen = new Point2D(x, y);
+
+        this.renderer.setCueEndPoint(dragPointScreen);
+    }
+
+    public void onMouseReleased(MouseEvent e) {
+
+        if (ballsMoving)
+            return;
+
         double x = e.getX();
         double y = e.getY();
 
         double pX = renderer.screenToPhysicsX(x);
         double pY = renderer.screenToPhysicsY(y);
+
+        Point2D endPointPhysical = new Point2D(pX, pY);
+
+        // create 2D vectors from start-/endpoint
+        Vector2 start = new Vector2(startPointPhysical.getX(), startPointPhysical.getY());
+        Vector2 end = new Vector2(endPointPhysical.getX(), endPointPhysical.getY());
+
+        // difference (direction) between start-/endpoint
+        Vector2 difference = start.difference(end);
+
+        Ray ray = new Ray(start, difference);
+
+        ArrayList<RaycastResult> results = new ArrayList<>();
+        boolean result = this.physics.getWorld().raycast(ray, 1.0,false, false, results);
+
+        if (result) {
+            Body body = results.get(0).getBody();
+
+            if (body.getUserData() instanceof Ball)
+                body.applyImpulse(difference.multiply(15));
+        }
+
+        renderer.removeCue();
     }
 
     private void placeBalls(List<Ball> balls) {
@@ -101,5 +153,66 @@ public class Game {
         Table table = new Table();
         physics.getWorld().addBody(table.getBody());
         renderer.setTable(table);
+    }
+
+    @Override
+    public void onBallPocketed(Ball b) {
+        b.getBody().setLinearVelocity(0, 0);
+
+        if (b == Ball.WHITE) {
+            this.renderer.setFoulMessage("White ball pocketed!");
+            this.decreasePlayerScore();
+
+            this.moveWhiteBallToStartPosition();
+
+            this.switchPlayers();
+        } else {
+            renderer.removeBall(b);
+            physics.getWorld().removeBody(b.getBody());
+            this.increasePlayerScore();
+        }
+    }
+
+    @Override
+    public void onBallsCollide(Ball b1, Ball b2) {
+
+    }
+
+    @Override
+    public void onEndAllObjectsRest() {
+        this.ballsMoving = true;
+    }
+
+    @Override
+    public void onStartAllObjectsRest() {
+        this.ballsMoving = false;
+    }
+
+    private void switchPlayers() {
+
+        if (currentPlayer == 1)
+            currentPlayer = 2;
+        else
+            currentPlayer = 1;
+    }
+
+    private void increasePlayerScore() {
+
+        if (currentPlayer == 1)
+            renderer.setPlayer1Score(renderer.getPlayer1Score() + 1);
+        else
+            renderer.setPlayer2Score(renderer.getPlayer2Score() + 1);
+    }
+
+    private void decreasePlayerScore() {
+
+        if (currentPlayer == 1)
+            renderer.setPlayer1Score(renderer.getPlayer1Score() - 1);
+        else
+            renderer.setPlayer2Score(renderer.getPlayer2Score() - 1);
+    }
+
+    private void moveWhiteBallToStartPosition() {
+        Ball.WHITE.setPosition(Table.Constants.WIDTH * 0.25, 0);
     }
 }
