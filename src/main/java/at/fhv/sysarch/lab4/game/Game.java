@@ -210,6 +210,8 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
             renderer.setPlayer1Score(renderer.getPlayer1Score() + 1);
         else
             renderer.setPlayer2Score(renderer.getPlayer2Score() + 1);
+
+        renderer.setStrikeMessage("Player " + currentPlayer + " scored");
     }
 
     private void decreasePlayerScore() {
