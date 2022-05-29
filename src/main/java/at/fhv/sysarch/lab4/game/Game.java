@@ -26,8 +26,11 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
 
     // player
     private int currentPlayer = 1;
+    private boolean hasAlreadyPlayed;
 
     private boolean ballsMoving;
+    private boolean isFoul;
+    private boolean whiteBallDidNotCollideWithOtherBall;
 
     public Game(Renderer renderer, Physics physics) {
         this.renderer = renderer;
@@ -40,6 +43,10 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
     }
 
     public void onMousePressed(MouseEvent e) {
+
+        renderer.setStrikeMessage("");
+        renderer.setActionMessage("");
+        renderer.setFoulMessage("");
 
         if (ballsMoving)
             return;
@@ -89,16 +96,29 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
         // difference (direction) between start-/endpoint
         Vector2 difference = start.difference(end);
 
-        Ray ray = new Ray(start, difference);
+        if (!difference.isZero()) {
+            Ray ray = new Ray(start, difference);
 
-        ArrayList<RaycastResult> results = new ArrayList<>();
-        boolean result = this.physics.getWorld().raycast(ray, 1.0,false, false, results);
+            ArrayList<RaycastResult> results = new ArrayList<>();
+            boolean result = this.physics.getWorld().raycast(ray, 0.1,false, false, results);
 
-        if (result) {
-            Body body = results.get(0).getBody();
+            if (result) {
+                Body body = results.get(0).getBody();
+                Ball ball = (Ball) body.getUserData();
 
-            if (body.getUserData() instanceof Ball)
-                body.applyImpulse(difference.multiply(15));
+                if (body.getUserData() instanceof Ball) {
+                    body.applyImpulse(difference.multiply(15));
+                    hasAlreadyPlayed = true;
+                }
+
+                if (ball != Ball.WHITE) {
+                    this.isFoul = true;
+                    this.decreasePlayerScore();
+                    renderer.setFoulMessage("Foul! Striking only the white ball is allowed");
+                }
+                else
+                    this.isFoul = false;
+            }
         }
 
         renderer.removeCue();
@@ -162,36 +182,48 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
         b.getBody().setLinearVelocity(0, 0);
 
         if (b == Ball.WHITE) {
+            isFoul = true;
             renderer.setFoulMessage("Foul! White ball pocketed by Player " + currentPlayer + "!");
             this.decreasePlayerScore();
 
             this.moveWhiteBallToStartPosition();
-
-            this.switchPlayers();
         } else {
             renderer.removeBall(b);
             physics.getWorld().removeBody(b.getBody());
-            this.increasePlayerScore();
+
+            if (!isFoul)
+                this.increasePlayerScore();
         }
     }
 
     @Override
     public void onBallsCollide(Ball b1, Ball b2) {
 
+        if (b1 == Ball.WHITE && b2 != Ball.WHITE || b1 != Ball.WHITE && b2 == Ball.WHITE)
+            whiteBallDidNotCollideWithOtherBall = false;
     }
 
     @Override
     public void onEndAllObjectsRest() {
         ballsMoving = true;
-
-        renderer.setActionMessage("");
-        renderer.setFoulMessage("");
-//        renderer.setStrikeMessage("");
     }
 
     @Override
     public void onStartAllObjectsRest() {
+
+        if (whiteBallDidNotCollideWithOtherBall && hasAlreadyPlayed) {
+            isFoul = true;
+            this.decreasePlayerScore();
+            renderer.setFoulMessage("Foul! White ball did not touch any other ball");
+        }
+
+        if (isFoul)
+            this.switchPlayers();
+
         ballsMoving = false;
+        whiteBallDidNotCollideWithOtherBall = true;
+        isFoul = false;
+        hasAlreadyPlayed = false;
     }
 
     private void switchPlayers() {

@@ -32,9 +32,7 @@ public class Physics implements ContactListener, StepListener {
     }
 
     @Override
-    public void begin(Step step, World world) {
-
-    }
+    public void begin(Step step, World world) {}
 
     @Override
     public void updatePerformed(Step step, World world) {
@@ -69,14 +67,21 @@ public class Physics implements ContactListener, StepListener {
     @Override
     public boolean begin(ContactPoint point) {
 
-//        System.out.println("Contact!");
+        Body body1 = point.getBody1();
+        Body body2 = point.getBody2();
+
+        if (body1.getUserData() instanceof Ball && body2.getUserData() instanceof Ball) {
+            ballsCollisionListener.onBallsCollide(
+                    (Ball) body1.getUserData(),
+                    (Ball) body2.getUserData()
+            );
+        }
+
         return true;
     }
 
     @Override
-    public void end(ContactPoint point) {
-
-    }
+    public void end(ContactPoint point) {}
 
     @Override
     public boolean persist(PersistedContactPoint point) {
