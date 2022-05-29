@@ -92,6 +92,7 @@ public class Renderer extends AnimationTimer {
     }
 
     public void setFoulMessage(String foulMessage) {
+        this.gc.setFill(Color.RED);
         this.foulMessage = foulMessage;
     }
 
@@ -305,7 +306,7 @@ public class Renderer extends AnimationTimer {
         player2ScoreTrans.appendScale(5, 5);
 
         this.gc.setTransform(actionMsgTrans);
-        this.gc.fillText(this.actionMessage, 0, 0);
+        this.gc.fillText(this.actionMessage, 75, -40);
 
         this.gc.setTransform(strikeMsgTrans);
         this.gc.fillText(this.strikeMessage, 0, 0);

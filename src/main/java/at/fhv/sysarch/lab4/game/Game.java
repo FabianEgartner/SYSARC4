@@ -66,7 +66,7 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
 
         Point2D dragPointScreen = new Point2D(x, y);
 
-        this.renderer.setCueEndPoint(dragPointScreen);
+        renderer.setCueEndPoint(dragPointScreen);
     }
 
     public void onMouseReleased(MouseEvent e) {
@@ -153,6 +153,8 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
         Table table = new Table();
         physics.getWorld().addBody(table.getBody());
         renderer.setTable(table);
+
+        renderer.setActionMessage("Player 1 starts");
     }
 
     @Override
@@ -160,7 +162,7 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
         b.getBody().setLinearVelocity(0, 0);
 
         if (b == Ball.WHITE) {
-            this.renderer.setFoulMessage("White ball pocketed!");
+            renderer.setFoulMessage("Foul! White ball pocketed by Player " + currentPlayer + "!");
             this.decreasePlayerScore();
 
             this.moveWhiteBallToStartPosition();
@@ -180,12 +182,16 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
 
     @Override
     public void onEndAllObjectsRest() {
-        this.ballsMoving = true;
+        ballsMoving = true;
+
+        renderer.setActionMessage("");
+        renderer.setFoulMessage("");
+//        renderer.setStrikeMessage("");
     }
 
     @Override
     public void onStartAllObjectsRest() {
-        this.ballsMoving = false;
+        ballsMoving = false;
     }
 
     private void switchPlayers() {
@@ -194,6 +200,8 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
             currentPlayer = 2;
         else
             currentPlayer = 1;
+
+        renderer.setActionMessage("Player " + currentPlayer + "'s Turn");
     }
 
     private void increasePlayerScore() {
