@@ -357,20 +357,28 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
         JPanel panel = new JPanel();
         panel.setSize(new Dimension(200, 50));
         panel.setLayout(null);
+
         JLabel label = new JLabel("Do you want to start a new game?");
         label.setVerticalAlignment(SwingConstants.BOTTOM);
-        label.setBounds(20, 20, 200, 30);
+        label.setBounds(0, 0, 200, 30);
         label.setHorizontalAlignment(SwingConstants.CENTER);
+
         panel.add(label);
-        UIManager.put("OptionPane.minimumSize", new Dimension(400, 200));
-        int res = JOptionPane.showConfirmDialog(null, panel, "New Game",
+
+        UIManager.put("OptionPane.minimumSize", new Dimension(250, 100));
+        int res = JOptionPane.showConfirmDialog(
+                null, panel, "New Game",
                 JOptionPane.YES_NO_OPTION,
-                JOptionPane.PLAIN_MESSAGE);
-        if(res == 0) {
+                JOptionPane.PLAIN_MESSAGE
+        );
+
+        // start new game
+        if (res == 0)
             System.out.println("New Game started...");
-        } else if (res == 1) {
+
+        // quit game
+        else if (res == 1)
             System.exit(0);
-        }
     }
 
     private void resetMessages() {
