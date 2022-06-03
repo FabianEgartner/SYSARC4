@@ -60,10 +60,8 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
 
     public void onMousePressed(MouseEvent e) {
 
-        // set messages to empty
-        renderer.setStrikeMessage("");
-        renderer.setActionMessage("");
-        renderer.setFoulMessage("");
+        // reset messages
+        this.resetMessages();
 
         if (ballsMoving)
             return;
@@ -183,7 +181,7 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
         physics.getWorld().addBody(Ball.WHITE.getBody());
         renderer.addBall(Ball.WHITE);
         
-        Table table = new Table();
+        this.table = new Table();
         physics.getWorld().addBody(table.getBody());
         renderer.setTable(table);
 
@@ -350,5 +348,43 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
 
         // reset pocketedBalls
         pocketedBallsInGame.clear();
+    }
+
+    void showNewGameDialog() {
+        JPanel panel = new JPanel();
+        panel.setSize(new Dimension(200, 50));
+        panel.setLayout(null);
+        JLabel label = new JLabel("Do you want to start a new game?");
+        label.setVerticalAlignment(SwingConstants.BOTTOM);
+        label.setBounds(20, 20, 200, 30);
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        panel.add(label);
+        UIManager.put("OptionPane.minimumSize", new Dimension(400, 200));
+        int res = JOptionPane.showConfirmDialog(null, panel, "New Game",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.PLAIN_MESSAGE);
+        if(res == 0) {
+            System.out.println("New Game started...");
+        } else if (res == 1) {
+            System.exit(0);
+        }
+    }
+
+    private void resetMessages() {
+        renderer.setStrikeMessage("");
+        renderer.setActionMessage("");
+        renderer.setFoulMessage("");
+    }
+
+    private void showWinner() {
+        int player1Score = this.renderer.getPlayer1Score();
+        int player2Score = this.renderer.getPlayer2Score();
+
+        if (player1Score > player2Score)
+            this.renderer.setActionMessage("Player 1 wins!");
+        else if (player2Score > player1Score)
+            this.renderer.setActionMessage("Player 2 wins!");
+        else
+            this.renderer.setActionMessage("draw!");
     }
 }
