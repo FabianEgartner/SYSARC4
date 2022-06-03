@@ -10,9 +10,6 @@ import at.fhv.sysarch.lab4.physics.ObjectsRestListener;
 import at.fhv.sysarch.lab4.physics.Physics;
 import at.fhv.sysarch.lab4.rendering.Renderer;
 import javafx.geometry.Point2D;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
 import javafx.scene.input.MouseEvent;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.RaycastResult;
@@ -220,37 +217,37 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
         if (hasAlreadyPlayed) {
             // noCollidingFoul & whiteBallPocketedFoul - decrease player score by 1
             if (noCollidingFoul && whiteBallPocketedFoul) {
-                this.decreasePlayerScoreByAmount(1);
-                renderer.setFoulMessage("Foul! No collision with other balls & white ball pocketed!");
+                this.decreasePlayerScore();
+                renderer.setFoulMessage("Foul! No collision with other balls &\nwhite ball pocketed!");
             }
 
             // noCollidingFoul & coloredBallHitFirstFoul - decrease player score by 1
-            if (noCollidingFoul && coloredBallHitFirstFoul) {
-                this.decreasePlayerScoreByAmount(1);
-                renderer.setFoulMessage("Foul! No collision with other balls & colored ball hit first!");
+            else if (noCollidingFoul && coloredBallHitFirstFoul) {
+                this.decreasePlayerScore();
+                renderer.setFoulMessage("Foul! No collision with other balls &\ncolored ball hit first!");
             }
 
             // noCollidingFoul - decrease player score by 1
             else if (noCollidingFoul) {
-                this.decreasePlayerScoreByAmount(1);
+                this.decreasePlayerScore();
                 renderer.setFoulMessage("Foul! No collision with other balls!");
             }
 
             // coloredBallHitFirstFoul & whiteBallPocketedFoul - decrease player score by 1
             else if (coloredBallHitFirstFoul && whiteBallPocketedFoul) {
-                this.decreasePlayerScoreByAmount(1);
-                renderer.setFoulMessage("Foul! Colored ball hit first & white ball pocketed!");
+                this.decreasePlayerScore();
+                renderer.setFoulMessage("Foul! Colored ball hit first &\nwhite ball pocketed!");
             }
 
             // coloredBallHitFirstFoul - decrease player score by 1
             else if (coloredBallHitFirstFoul) {
-                this.decreasePlayerScoreByAmount(1);
+                this.decreasePlayerScore();
                 renderer.setFoulMessage("Foul! Colored ball hit first!");
             }
 
             // whiteBallPocketedFoul - decrease player score by 1
             else if (whiteBallPocketedFoul) {
-                this.decreasePlayerScoreByAmount(1);
+                this.decreasePlayerScore();
                 renderer.setFoulMessage("Foul! White ball pocketed!");
             }
 
@@ -301,13 +298,13 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
         renderer.setStrikeMessage("Player " + currentPlayer + " scored " + amount + " point(s)!");
     }
 
-    private void decreasePlayerScoreByAmount(int amount) {
+    private void decreasePlayerScore() {
         if (currentPlayer == 1)
-            renderer.setPlayer1Score(renderer.getPlayer1Score() - amount);
+            renderer.setPlayer1Score(renderer.getPlayer1Score() - 1);
         else
-            renderer.setPlayer2Score(renderer.getPlayer2Score() - amount);
+            renderer.setPlayer2Score(renderer.getPlayer2Score() - 1);
 
-        renderer.setStrikeMessage("Due to the foul(s), Player " + currentPlayer + " lost " + amount + " point(s)!");
+        renderer.setStrikeMessage("Due to the foul(s), Player " + currentPlayer + " lost " + 1 + " point!");
     }
 
     private void moveWhiteBallToStartPosition() {

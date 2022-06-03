@@ -306,10 +306,10 @@ public class Renderer extends AnimationTimer {
         player2ScoreTrans.appendScale(5, 5);
 
         this.gc.setTransform(actionMsgTrans);
-        this.gc.fillText(this.actionMessage, 75, -60);
+        this.gc.fillText(this.actionMessage, 25, -60);
 
         this.gc.setTransform(strikeMsgTrans);
-        this.gc.fillText(this.strikeMessage, 75, -20);
+        this.gc.fillText(this.strikeMessage, 25, -20);
 
         this.gc.setTransform(player1ScoreTrans);
         this.gc.fillText(String.format("Player 1 score: %d", this.player1Score), 0, 0);
@@ -319,7 +319,7 @@ public class Renderer extends AnimationTimer {
 
         this.gc.setFill(Color.RED);
         this.gc.setTransform(foulMsgTrans);
-        this.gc.fillText(this.foulMessage, 40, 20);
+        this.gc.fillText(this.foulMessage, 25, 20);
     }
 
     private void renderCushion(Polygon p) {
