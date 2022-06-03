@@ -1,24 +1,24 @@
 package at.fhv.sysarch.lab4.rendering;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
+import at.fhv.sysarch.lab4.game.Ball;
+import at.fhv.sysarch.lab4.game.Table;
+import at.fhv.sysarch.lab4.game.Table.TablePart;
 import at.fhv.sysarch.lab4.physics.Physics;
+import javafx.animation.AnimationTimer;
+import javafx.geometry.Point2D;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.ArcType;
+import javafx.scene.transform.Affine;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Circle;
 import org.dyn4j.geometry.Polygon;
 import org.dyn4j.geometry.Transform;
 import org.dyn4j.geometry.Vector2;
 
-import at.fhv.sysarch.lab4.game.Ball;
-import at.fhv.sysarch.lab4.game.Table;
-import at.fhv.sysarch.lab4.game.Table.TablePart;
-import javafx.animation.AnimationTimer;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.ArcType;
-import javafx.scene.transform.Affine;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 public class Renderer extends AnimationTimer {
     private long lastUpdate;
@@ -40,7 +40,7 @@ public class Renderer extends AnimationTimer {
 
     private final double[] xsBuffer = new double[4];
     private final double[] ysBuffer = new double[4];
-    
+
     private String strikeMessage;
     private String foulMessage;
     private String actionMessage;
@@ -50,6 +50,10 @@ public class Renderer extends AnimationTimer {
     private Physics physics;
 
     private Optional<FrameListener> frameListener;
+
+    // cue start and endpoint
+    private Point2D cueStartPoint;
+    private Point2D cueEndPoint;
 
     public Renderer(final GraphicsContext gc, 
         int sceneWidth, int sceneHeight, Physics physics) {
@@ -87,11 +91,20 @@ public class Renderer extends AnimationTimer {
     }
 
     public void setFoulMessage(String foulMessage) {
+        this.gc.setFill(Color.RED);
         this.foulMessage = foulMessage;
+    }
+
+    public int getPlayer1Score() {
+        return player1Score;
     }
 
     public void setPlayer1Score(int player1Score) {
         this.player1Score = player1Score;
+    }
+
+    public int getPlayer2Score() {
+        return player2Score;
     }
 
     public void setPlayer2Score(int player2Score) {
@@ -233,7 +246,26 @@ public class Renderer extends AnimationTimer {
     }
 
     private void drawCue() {
-        // TODO: draw cue
+        // rendering cue in JavaFX coordinate system
+        this.gc.setTransform(this.jfxCoords);
+
+        if (cueStartPoint != null && cueEndPoint != null) {
+            gc.setLineWidth(5);
+            gc.strokeLine(cueStartPoint.getX(), cueStartPoint.getY(), cueEndPoint.getX(), cueEndPoint.getY());
+        }
+    }
+
+    public void setCueStartPoint(Point2D startPoint) {
+        this.cueStartPoint = startPoint;
+    }
+
+    public void setCueEndPoint(Point2D endPoint) {
+        this.cueEndPoint = endPoint;
+    }
+
+    public void removeCue() {
+        this.cueStartPoint = null;
+        this.cueEndPoint = null;
     }
 
     private void drawFPS(double dt) {
@@ -273,19 +305,20 @@ public class Renderer extends AnimationTimer {
         player2ScoreTrans.appendScale(5, 5);
 
         this.gc.setTransform(actionMsgTrans);
-        this.gc.fillText(this.actionMessage, 0, 0);
+        this.gc.fillText(this.actionMessage, 25, -60);
 
         this.gc.setTransform(strikeMsgTrans);
-        this.gc.fillText(this.strikeMessage, 0, 0);
-
-        this.gc.setTransform(foulMsgTrans);
-        this.gc.fillText(this.foulMessage, 0, 0);
+        this.gc.fillText(this.strikeMessage, 25, -20);
 
         this.gc.setTransform(player1ScoreTrans);
         this.gc.fillText(String.format("Player 1 score: %d", this.player1Score), 0, 0);
 
         this.gc.setTransform(player2ScoreTrans);
         this.gc.fillText(String.format("Player 2 score: %d", this.player2Score), 0, 0);
+
+        this.gc.setFill(Color.RED);
+        this.gc.setTransform(foulMsgTrans);
+        this.gc.fillText(this.foulMessage, 25, 20);
     }
 
     private void renderCushion(Polygon p) {
@@ -319,7 +352,7 @@ public class Renderer extends AnimationTimer {
 
         this.gc.setTransform(pocketTrans);
 
-        // center of phyics circle is in the center
+        // center of physics circle is in the center
         // javafx draws ovals from top left corner
         this.gc.fillOval(-r, -r, d, d);
     }
