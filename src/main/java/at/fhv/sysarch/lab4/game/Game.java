@@ -279,7 +279,7 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
             hasAlreadyPlayed = false;
 
             // reset game if no balls left
-            if (pocketedBallsInGame.size() > 1) {
+            if (pocketedBallsInGame.size() > 14) {
                 this.resetGame();
             }
         }
