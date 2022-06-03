@@ -1,7 +1,7 @@
 package at.fhv.sysarch.lab4.game;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.awt.*;
+import java.util.*;
 import java.util.List;
 
 import at.fhv.sysarch.lab4.physics.BallPocketedListener;
@@ -10,15 +10,23 @@ import at.fhv.sysarch.lab4.physics.ObjectsRestListener;
 import at.fhv.sysarch.lab4.physics.Physics;
 import at.fhv.sysarch.lab4.rendering.Renderer;
 import javafx.geometry.Point2D;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 import javafx.scene.input.MouseEvent;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.RaycastResult;
 import org.dyn4j.geometry.Ray;
 import org.dyn4j.geometry.Vector2;
 
+import javax.swing.*;
+
 public class Game implements BallPocketedListener, BallsCollisionListener, ObjectsRestListener {
     private final Renderer renderer;
     private Physics physics;
+
+    // table
+    private Table table;
 
     // cue
     private Point2D startPointPhysical;
@@ -29,15 +37,16 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
     private boolean hasAlreadyPlayed;
 
     // balls
+    List<Ball> pocketedBallsInGame = new ArrayList<>();
     private int ballsPocketedInRound;
-    private int ballsPocketedInGame;
     private boolean ballsMoving;
 
     // fouls
-    private boolean coloredBallHitFirstFoul;
-    private boolean whiteBallPocketedFoul;
-    private boolean noCollidingFoul;
+    private boolean coloredBallHitFirstFoul = false;
+    private boolean whiteBallPocketedFoul = false;
+    private boolean noCollidingFoul = true;
 
+    // testing only
 
     public Game(Renderer renderer, Physics physics) {
         this.renderer = renderer;
@@ -188,10 +197,12 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
         if (b == Ball.WHITE) {
             whiteBallPocketedFoul = true;
         } else {
+            // testing only
+            pocketedBallsInGame.add(b);
+            ballsPocketedInRound++;
+
             renderer.removeBall(b);
             physics.getWorld().removeBody(b.getBody());
-            ballsPocketedInRound++;
-            ballsPocketedInGame++;
         }
     }
 
@@ -209,10 +220,16 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
     @Override
     public void onStartAllObjectsRest() {
         if (hasAlreadyPlayed) {
-            // noCollidingFoul & whiteBallPocketedFoul - decrease player score by 1 + 1
+            // noCollidingFoul & whiteBallPocketedFoul - decrease player score by 1
             if (noCollidingFoul && whiteBallPocketedFoul) {
-                this.decreasePlayerScoreByAmount(2);
+                this.decreasePlayerScoreByAmount(1);
                 renderer.setFoulMessage("Foul! No collision with other balls & white ball pocketed!");
+            }
+
+            // noCollidingFoul & coloredBallHitFirstFoul - decrease player score by 1
+            if (noCollidingFoul && coloredBallHitFirstFoul) {
+                this.decreasePlayerScoreByAmount(1);
+                renderer.setFoulMessage("Foul! No collision with other balls & colored ball hit first!");
             }
 
             // noCollidingFoul - decrease player score by 1
@@ -221,15 +238,15 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
                 renderer.setFoulMessage("Foul! No collision with other balls!");
             }
 
-            // coloredBallHitFirstFoul & whiteBallPocketedFoul - decrease player score by amount of balls pocketed + 1
+            // coloredBallHitFirstFoul & whiteBallPocketedFoul - decrease player score by 1
             else if (coloredBallHitFirstFoul && whiteBallPocketedFoul) {
-                this.decreasePlayerScoreByAmount(ballsPocketedInRound + 1);
+                this.decreasePlayerScoreByAmount(1);
                 renderer.setFoulMessage("Foul! Colored ball hit first & white ball pocketed!");
             }
 
-            // coloredBallHitFirstFoul - decrease player score by amount of balls pocketed
+            // coloredBallHitFirstFoul - decrease player score by 1
             else if (coloredBallHitFirstFoul) {
-                this.decreasePlayerScoreByAmount(ballsPocketedInRound);
+                this.decreasePlayerScoreByAmount(1);
                 renderer.setFoulMessage("Foul! Colored ball hit first!");
             }
 
@@ -262,7 +279,7 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
             hasAlreadyPlayed = false;
 
             // reset game if no balls left
-            if (ballsPocketedInGame == 15) {
+            if (pocketedBallsInGame.size() > 1) {
                 this.resetGame();
             }
         }
@@ -301,7 +318,37 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
 
     private void resetGame() {
 
-        // TODO: implement
+        // display winner score
+        this.showWinner();
 
+        // start new game or quit
+        this.showNewGameDialog();
+
+        this.moveWhiteBallToStartPosition();
+
+        this.resetMessages();
+
+        // reset player scores
+        renderer.setPlayer1Score(0);
+        renderer.setPlayer2Score(0);
+
+        renderer.setActionMessage("Player 1 starts the game!");
+
+        // place (pocketed) balls & add to renderer
+        this.placeBalls(pocketedBallsInGame);
+
+        // add all (pocketed) balls to physics
+        for (Ball b : pocketedBallsInGame) {
+            physics.getWorld().addBody(b.getBody());
+        }
+
+        // reset table
+        this.table = new Table();
+        physics.removeBodyFromGame(table.getBody());
+        physics.addBodyFromGame(table.getBody());
+        renderer.setTable(table);
+
+        // reset pocketedBalls
+        pocketedBallsInGame.clear();
     }
 }

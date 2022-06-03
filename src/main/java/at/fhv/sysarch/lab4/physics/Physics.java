@@ -36,12 +36,12 @@ public class Physics implements ContactListener, StepListener {
 
     @Override
     public void updatePerformed(Step step, World world) {
-
+        // not implemented
     }
 
     @Override
     public void postSolve(Step step, World world) {
-
+        // not implemented
     }
 
     @Override
@@ -61,7 +61,7 @@ public class Physics implements ContactListener, StepListener {
 
     @Override
     public void sensed(ContactPoint point) {
-
+        // not implemented
     }
 
     @Override
@@ -116,7 +116,15 @@ public class Physics implements ContactListener, StepListener {
 
     @Override
     public void postSolve(SolvedContactPoint point) {
+        // not implemented
+    }
 
+    public void removeBodyFromGame(Body body) {
+        world.removeBody(body);
+    }
+
+    public void addBodyFromGame(Body body) {
+        world.addBody(body);
     }
 
     public void setBallPocketedListener(BallPocketedListener ballPocketedListener) {
