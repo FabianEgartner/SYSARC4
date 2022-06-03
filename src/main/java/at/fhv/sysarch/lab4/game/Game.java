@@ -110,22 +110,27 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
 
         // ignore simple mouse clicks
         if (!difference.isZero()) {
-            Ray ray = new Ray(start, difference);
+            // ensure that balls stay on table
+            if (difference.getMagnitude() < 1.35) {
+                Ray ray = new Ray(start, difference);
 
-            ArrayList<RaycastResult> results = new ArrayList<>();
-            boolean result = this.physics.getWorld().raycast(ray, 0.1,false, false, results);
+                ArrayList<RaycastResult> results = new ArrayList<>();
+                boolean result = this.physics.getWorld().raycast(ray, 0.1,false, false, results);
 
-            if (result) {
-                Body body = results.get(0).getBody();
-                Ball ball = (Ball) body.getUserData();
+                if (result) {
+                    Body body = results.get(0).getBody();
+                    Ball ball = (Ball) body.getUserData();
 
-                if (body.getUserData() instanceof Ball) {
-                    body.applyImpulse(difference.multiply(15));
-                    hasAlreadyPlayed = true;
+                    if (body.getUserData() instanceof Ball) {
+                        body.applyImpulse(difference.multiply(15));
+                        hasAlreadyPlayed = true;
+                    }
+
+                    if (ball != Ball.WHITE)
+                        coloredBallHitFirstFoul = true;
                 }
-
-                if (ball != Ball.WHITE)
-                    coloredBallHitFirstFoul = true;
+            } else {
+                System.out.println("Aggression is no solution... :)");
             }
         }
 
@@ -319,8 +324,8 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
         // start new game or quit
         this.showNewGameDialog();
 
+        // reset white ball & messages
         this.moveWhiteBallToStartPosition();
-
         this.resetMessages();
 
         // reset player scores
@@ -328,6 +333,7 @@ public class Game implements BallPocketedListener, BallsCollisionListener, Objec
         renderer.setPlayer2Score(0);
 
         renderer.setActionMessage("Player 1 starts the game!");
+        currentPlayer = 1;
 
         // place (pocketed) balls & add to renderer
         this.placeBalls(pocketedBallsInGame);
