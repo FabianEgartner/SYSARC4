@@ -1,9 +1,5 @@
 package at.fhv.sysarch.lab4.game;
 
-import java.awt.*;
-import java.util.*;
-import java.util.List;
-
 import at.fhv.sysarch.lab4.physics.BallPocketedListener;
 import at.fhv.sysarch.lab4.physics.BallsCollisionListener;
 import at.fhv.sysarch.lab4.physics.ObjectsRestListener;
@@ -17,6 +13,10 @@ import org.dyn4j.geometry.Ray;
 import org.dyn4j.geometry.Vector2;
 
 import javax.swing.*;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class Game implements BallPocketedListener, BallsCollisionListener, ObjectsRestListener {
     private final Renderer renderer;
